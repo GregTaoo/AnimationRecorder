@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "animt",
+  "version": "${version}",
+
+  "name": "AnimationRecorder",
+  "description": "This is an animation recorder!",
+  "authors": [
+    "GregTao"
+  ],
+  "contact": {
+    "homepage": "https://github.com/gregtaoo",
+    "sources": "https://github.com/gregtaoo"
+  },
+
+  "license": "GPL-v3.0",
+  "icon": "assets/animt/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "top.gregtao.animt.AnimationRecorder"
+    ]
+  },
+  "mixins": [
+    "animt.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.6",
+    "fabric": "*",
+    "minecraft": "~1.19",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
