@@ -10,3 +10,6 @@ pluginManagement {
 
 rootProject.name = 'AnimationRecorder'
 include 'Fabric-1.19'
+include 'Fabric-1.18.2'
+include 'Fabric-1.17.1'
+include 'Fabric-1.16.5'

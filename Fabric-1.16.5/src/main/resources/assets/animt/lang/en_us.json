@@ -1,0 +1,19 @@
+{
+	"animt.record_started":"Start recording mob: %s",
+	"animt.no_target":"Target mob cannot be found",
+	"animt.end_recording":"Finish recording mob: %s frames",
+	"animt.thread_started":"Exporting file: %s",
+	"animt.thread_finished":"Successfully exported! Click to open: %s",
+	
+	"animt.cmd.frames":"Set the amount of frames to %s",	
+	"animt.cmd.scale":"Set the scaling to %s",	
+	"animt.cmd.gif_size":"Set the size of image to %sx%s",
+	"animt.cmd.trans":"Set the transparency of image to %s",
+	"animt.cmd.multi_threads.on":"Using multithreading exporter",
+	"animt.cmd.multi_threads.off":"Not using multithreading exporter",
+	"animt.cmd.item_delta":"Set the offset of the mob in image to: [x: %s, y: %s]",
+	"animt.cmd.reset":"Reset parameters to default",
+	"animt.cmd.save_config":"Saved config file: %s",
+	"animt.cmd.load_config":"Loaded config file: %s",
+	"animt.cmd.load_config.failed":"Failed to load config file: %s, it may be not exist"
+}

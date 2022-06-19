@@ -1,0 +1,19 @@
+{
+	"animt.record_started":"开始录制动画: %s",
+	"animt.no_target":"目标未找到",
+	"animt.end_recording":"动画录制完毕: %s 帧",
+	"animt.thread_started":"导出文件: %s",
+	"animt.thread_finished":"成功导出文件! 点击打开: %s",
+	
+	"animt.cmd.frames":"设置动图帧数为 %s",	
+	"animt.cmd.scale":"设置模型缩放为 %s",	
+	"animt.cmd.gif_size":"设置导出图片大小为 %sx%s",
+	"animt.cmd.trans":"设置图片透明度为 %s",
+	"animt.cmd.multi_threads.on":"启用多线程导出",
+	"animt.cmd.multi_threads.off":"禁用多线程导出",
+	"animt.cmd.item_delta":"设置模型位置偏移量: [x: %s, y: %s]",
+	"animt.cmd.reset":"重置参数",
+	"animt.cmd.save_config":"保存了配置文件: %s",
+	"animt.cmd.load_config":"加载了配置文件: %s",
+	"animt.cmd.load_config.failed":"加载配置文件失败: %s, 可能是因为它不存在"
+}
