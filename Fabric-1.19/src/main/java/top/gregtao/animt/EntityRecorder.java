@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.SimpleFramebuffer;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.util.math.MatrixStack;
@@ -11,7 +12,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3f;
 import top.gregtao.animt.util.FileHelper;
 import top.gregtao.animt.util.Gif;
@@ -20,92 +20,69 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.util.Properties;
 
 public class EntityRecorder {
     public static MinecraftClient CLIENT = MinecraftClient.getInstance();
     public static EntityRecorder CURRENT;
 
-    public boolean trans = true, multiThreads = true, started = false, forceEnd = false;
-    public int timer = 0, maxFrames = 120, gifSize = 128;
-    public float scale = 1;
-    public int itemDeltaX, itemDeltaY;
+    public boolean started = false, forceEnd = false;
+    public int timer = 0;
     public LivingEntity target;
     public PlayerEntity player;
 
-    public int realWidth;
     public HitBoxHelper hitBoxHelper;
 
     public BufferedImage[] images;
-    public OutputGifThread thread;
+    public OutputImgThread thread;
 
-    public static File config = new File(FileHelper.filePath + "/config.properties");
+    public RecorderConfig config = new RecorderConfig();
 
-    public void resetParam() {
-        this.scale = 1;
-        this.trans = this.multiThreads = true;
-        this.maxFrames = 120;
-        this.gifSize = 128;
-        this.itemDeltaX = this.itemDeltaY = 0;
+    public EntityRecorder() {
+        this.config.file = new File(FileHelper.filePath + "/config.properties");
     }
 
-    public void writeConfig() throws Exception {
-        FileHelper.existOrCreateWithParent(config);
-        Properties properties = new Properties();
-        properties.put("gifSize", String.valueOf(this.gifSize));
-        properties.put("itemDeltaX", String.valueOf(this.itemDeltaX));
-        properties.put("itemDeltaY", String.valueOf(this.itemDeltaY));
-        properties.put("maxFrames", String.valueOf(this.maxFrames));
-        properties.put("multiThreads", String.valueOf(this.multiThreads ? 1 : 0));
-        properties.put("trans", String.valueOf(this.trans ? 1 : 0));
-        properties.store(new FileWriter(config), FileHelper.getCurrentTime() + " ANIMATION RECORDER");
-        AnimationRecorder.LOGGER.info("Wrote configs into file: " + config);
-    }
-
-    public boolean loadConfig() throws Exception {
-        if (!config.exists()) {
-            AnimationRecorder.LOGGER.warn("Config file: " + config + " NOT FOUND");
-            return false;
+    public static LivingEntity getTargetedEntity(MinecraftClient client) {
+        if (client.targetedEntity instanceof LivingEntity entity) {
+            return entity;
         }
-        Properties properties = new Properties();
-        properties.load(new FileReader(config));
-        this.gifSize = FileHelper.getIntegerFromProp(properties, "gifSize", "128");
-        this.itemDeltaX = FileHelper.getIntegerFromProp(properties, "itemDeltaX", "0");
-        this.itemDeltaY = FileHelper.getIntegerFromProp(properties, "itemDeltaY", "0");
-        this.maxFrames = FileHelper.getIntegerFromProp(properties, "maxFrames", "120");
-        this.multiThreads = FileHelper.getIntegerFromProp(properties, "multiThreads", "1") > 0;
-        this.trans = FileHelper.getIntegerFromProp(properties, "trans", "1") > 0;
-        AnimationRecorder.LOGGER.info("Loaded configs from file: " + config);
-        return true;
+        return null;
     }
 
-    public void startRecording(PlayerEntity player, MinecraftClient client) {
+    public void startRecording(PlayerEntity player) {
         if (this.started) {
             this.forceEnd = true;
             return;
         }
-
-        if (client.targetedEntity instanceof LivingEntity entity) {
-            this.target = entity;
+        if (this.target != null && !this.target.isDead()) {
             this.player = player;
-            this.images = new BufferedImage[this.maxFrames + 1];
-            Box box = entity.getVisibilityBoundingBox();
-            double x = box.getXLength(), z = box.getZLength();
-            this.realWidth = (int) ((x + z) / Math.sqrt(2));
+            this.recorderPreset();
             this.started = true;
-            this.execHitBoxHelper();
-            player.sendMessage(Text.translatable("animt.record_started", entity.getDisplayName().getString()));
-            AnimationRecorder.LOGGER.info("Try to record mob: " + this.target.getDisplayName().getString());
             return;
         }
         player.sendMessage(Text.translatable("animt.no_target"));
     }
 
+    public void bindTarget(MinecraftClient client, LivingEntity tg) {
+        PlayerEntity player = client.player;
+        if (player == null) return;
+        if (tg == null) {
+            player.sendMessage(Text.translatable("animt.no_target"));
+        } else {
+            this.target = tg;
+            player.sendMessage(Text.translatable("animt.bind_target", tg.getDisplayName().getString()));
+        }
+    }
+
+    public void recorderPreset() {
+        this.images = new BufferedImage[this.config.type == ImageFileType.GIF ? this.config.maxFrames + 1 : 1];
+        this.execHitBoxHelper();
+        this.player.sendMessage(Text.translatable("animt.record_started", this.target.getDisplayName().getString()));
+        AnimationRecorder.LOGGER.info("Try to record mob: " + this.target.getDisplayName().getString());
+    }
+
     public void endRecording() {
-        this.thread = new OutputGifThread();
-        if (this.multiThreads) this.thread.start();
+        this.thread = new OutputImgThread();
+        if (this.config.multiThreads) this.thread.start();
         else this.thread.run();
         this.started = false;
         this.forceEnd = false;
@@ -116,8 +93,7 @@ public class EntityRecorder {
 
     public void execHitBoxHelper() {
         if (this.target != null) {
-            Box box = this.target.getBoundingBox();
-            this.hitBoxHelper = new HitBoxHelper(box.getXLength(), box.getYLength(), box.getZLength(), Math.PI / 4, 0, 0);
+            this.hitBoxHelper = HitBoxHelper.getFromEntity(this.target);
         }
     }
 
@@ -129,62 +105,83 @@ public class EntityRecorder {
         int scaledWidth = client.getWindow().getScaledWidth();
         int scaledHeight = client.getWindow().getScaledHeight();
         int sz = Math.min(scaledHeight, scaledWidth);
-        if (recorder.timer >= recorder.maxFrames || recorder.forceEnd) {
+        if ((recorder.config.type != ImageFileType.GIF && recorder.timer == 1) ||
+                (recorder.config.type == ImageFileType.GIF && (recorder.timer >= recorder.config.maxFrames || recorder.forceEnd))) {
             recorder.endRecording();
             return;
         }
 
-        //预处理
-        RenderSystem.clearColor(1, 1, 1, 0);
-        Framebuffer framebuffer = new SimpleFramebuffer(scaledWidth, scaledHeight, true, MinecraftClient.IS_SYSTEM_MAC);
-        framebuffer.beginWrite(true);
-        RenderSystem.disableBlend();
-
-        //旋转模型
-        MatrixStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.multiply(Vec3f.NEGATIVE_Y.getDegreesQuaternion(45f));
-        matrixStack.multiply(Vec3f.NEGATIVE_X.getDegreesQuaternion(22.5f));
-        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(22.5f));
-
-        //渲染并保存
-        int entitySz = (int) (80 * recorder.scale / Math.max(recorder.hitBoxHelper.width, recorder.hitBoxHelper.height));
-        InventoryScreen.drawEntity(
-                sz + recorder.itemDeltaX - 27,
-                sz / 2 + recorder.itemDeltaY,
-                entitySz, 0, 0,
-                recorder.target);
-        framebuffer.endWrite();
-        NativeImage image = new NativeImage(scaledWidth, scaledHeight, false);
-        RenderSystem.bindTexture(framebuffer.getColorAttachment());
-        image.loadFromTextureImage(0, !recorder.trans);
-        image.mirrorVertically();
+        NativeImage image = renderToImage(sz, scaledWidth, scaledHeight, recorder.hitBoxHelper, recorder.target, recorder.config, matrices);
 
         try {
-            recorder.images[recorder.timer] = ImageIO.read(new ByteArrayInputStream(image.getBytes())).getSubimage(0, 0, sz, sz);
+            recorder.images[recorder.timer] = getSubImageBuffered(image, sz);
             recorder.timer += 1;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    public static BufferedImage getSubImageBuffered(NativeImage image, int sz) throws Exception {
+        return ImageIO.read(new ByteArrayInputStream(image.getBytes())).getSubimage(0, 0, sz, sz);
+    }
+
+    public static NativeImage renderToImage(int sz, int width, int height, HitBoxHelper hitBoxHelper, LivingEntity target, RecorderConfig config, MatrixStack matrices) {
+        //预处理
+        RenderSystem.clearColor(1, 1, 1, 0);
+        Framebuffer framebuffer = new SimpleFramebuffer(width, height, true, MinecraftClient.IS_SYSTEM_MAC);
+        framebuffer.beginWrite(true);
+        RenderSystem.disableBlend();
+        if (!config.trans) {
+            DrawableHelper.fill(matrices, 0, 0, sz, sz, (int) config.bgColor);
+        }
+
+        //旋转模型
+        rotateModelStack(config.rotateX, config.rotateY, config.rotateZ);
+
+        //渲染并保存
+        int entitySz = (int) (80 * config.scale / Math.max(hitBoxHelper.width, hitBoxHelper.height));
+        InventoryScreen.drawEntity(
+                sz + config.itemDeltaX - 27,
+                sz / 2 + config.itemDeltaY - 14,
+                entitySz, 0, 0,
+                target);
+        framebuffer.endWrite();
+        NativeImage image = new NativeImage(width, height, false);
+        RenderSystem.bindTexture(framebuffer.getColorAttachment());
+        image.loadFromTextureImage(0, !config.trans);
+        image.mirrorVertically();
+
+        return image;
+    }
+
+    public static void rotateModelStack(float x, float y, float z) {
+        MatrixStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.translate(0, 0, 500);
+        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(y));
+        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(x));
+        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(z));
+    }
+
+    public static String getOutputFileName(LivingEntity target, ImageFileType type) {
+        return target.getDisplayName().getString() + "_" + FileHelper.getCurrentTime() + "." + type.suffix;
+    }
 }
-class OutputGifThread implements Runnable {
+class OutputImgThread implements Runnable {
     private static Thread thread;
 
     @Override
     public void run() {
         EntityRecorder recorder = EntityRecorder.CURRENT;
-        String fileName = recorder.target.getDisplayName().getString() + "_" + FileHelper.getCurrentTime() + ".gif";
+        String fileName = EntityRecorder.getOutputFileName(recorder.target, recorder.config.type);
         recorder.player.sendMessage(Text.translatable("animt.thread_started", fileName).formatted(Formatting.DARK_AQUA));
         String fullPath = FileHelper.filePath + "/" + fileName;
-        Gif.convert(recorder.images, fullPath, 5, true, recorder.gifSize, recorder.gifSize);
-        recorder.target = null;
+        Gif.convert(recorder.images, fullPath, 5, true, recorder.config.gifSize, recorder.config.gifSize);
         recorder.player.sendMessage(Text.translatable("animt.thread_finished", FileHelper.getOpenFileLnk(new File(fullPath))).formatted(Formatting.GREEN));
     }
 
     public void start() {
         if (thread == null || !thread.isAlive()) {
-            thread = new Thread(this, "OutputGif Thread");
+            thread = new Thread(this, "OutputImg Thread");
             thread.start();
         }
     }

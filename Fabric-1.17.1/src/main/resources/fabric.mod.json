@@ -22,6 +22,9 @@
       "top.gregtao.animt.AnimationRecorder"
     ]
   },
+  "mixins": [
+    "animt.mixins.json"
+  ],
 
   "depends": {
     "fabricloader": ">=0.14.6",

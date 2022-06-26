@@ -1,5 +1,9 @@
 package top.gregtao.animt;
 
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.Box;
+import org.jetbrains.annotations.NotNull;
+
 public class HitBoxHelper {
     public double x, y, z, theta, m, n;
     public double k, width, height;
@@ -14,6 +18,11 @@ public class HitBoxHelper {
         this.k = z / (Math.sqrt(m * m + n * n) * Math.tan(theta) - z / 2);
         this.width = this.width();
         this.height = this.height();
+    }
+
+    public static HitBoxHelper getFromEntity(@NotNull LivingEntity entity) {
+        Box box = entity.getBoundingBox();
+        return new HitBoxHelper(box.getXLength(), box.getYLength(), box.getZLength(), Math.PI / 8, 0, 0);
     }
 
     public double width() {

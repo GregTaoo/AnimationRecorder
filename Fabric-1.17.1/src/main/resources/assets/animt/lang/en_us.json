@@ -4,6 +4,7 @@
 	"animt.end_recording":"Finish recording mob: %s frames",
 	"animt.thread_started":"Exporting file: %s",
 	"animt.thread_finished":"Successfully exported! Click to open: %s",
+	"animt.bind_target":"Bound target: %s",
 	
 	"animt.cmd.frames":"Set the amount of frames to %s",	
 	"animt.cmd.scale":"Set the scaling to %s",	
@@ -12,8 +13,25 @@
 	"animt.cmd.multi_threads.on":"Using multithreading exporter",
 	"animt.cmd.multi_threads.off":"Not using multithreading exporter",
 	"animt.cmd.item_delta":"Set the offset of the mob in image to: [x: %s, y: %s]",
+	"animt.cmd.rotate":"Set the rotate angles of model to: [x: %s, y: %s, z: %s]",
 	"animt.cmd.reset":"Reset parameters to default",
 	"animt.cmd.save_config":"Saved config file: %s",
 	"animt.cmd.load_config":"Loaded config file: %s",
-	"animt.cmd.load_config.failed":"Failed to load config file: %s, it may be not exist"
+	"animt.cmd.load_config.failed":"Failed to load config file: %s, it may be not exist",
+	
+	"animt.button.bl.true":"Yes",
+	"animt.button.bl.false":"No",
+	"animt.button.reset":"Reset to default",
+	"animt.button.save":"Save to memory",
+	"animt.button.save_file":"Save to file",
+	"animt.button.open_folder":"Open folder",
+	"animt.button.types":"Image Type",
+	
+	"animt.screen.title":"AnR Settings",
+	"animt.screen.save":"Updated current config",
+	"animt.screen.trans":"Transparently",
+	
+	"animt.key":"AnR Hotkeys",
+	"animt.key.record":"Record Controller",
+	"animt.key.bind":"Bind Mob"
 }

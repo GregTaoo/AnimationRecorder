@@ -4,6 +4,7 @@
 	"animt.end_recording":"动画录制完毕: %s 帧",
 	"animt.thread_started":"导出文件: %s",
 	"animt.thread_finished":"成功导出文件! 点击打开: %s",
+	"animt.bind_target":"绑定目标: %s",
 	
 	"animt.cmd.frames":"设置动图帧数为 %s",	
 	"animt.cmd.scale":"设置模型缩放为 %s",	
@@ -12,8 +13,25 @@
 	"animt.cmd.multi_threads.on":"启用多线程导出",
 	"animt.cmd.multi_threads.off":"禁用多线程导出",
 	"animt.cmd.item_delta":"设置模型位置偏移量: [x: %s, y: %s]",
+	"animt.cmd.rotate":"设置模型旋转角度: [x: %s, y: %s, z: %s]",
 	"animt.cmd.reset":"重置参数",
 	"animt.cmd.save_config":"保存了配置文件: %s",
 	"animt.cmd.load_config":"加载了配置文件: %s",
-	"animt.cmd.load_config.failed":"加载配置文件失败: %s, 可能是因为它不存在"
+	"animt.cmd.load_config.failed":"加载配置文件失败: %s, 可能是因为它不存在",
+	
+	"animt.button.bl.true":"是",
+	"animt.button.bl.false":"否",
+	"animt.button.reset":"重设为默认",
+	"animt.button.save":"保存至当前",
+	"animt.button.save_file":"保存至文件",
+	"animt.button.open_folder":"打开文件夹",
+	"animt.button.types":"图片类型",
+	
+	"animt.screen.title":"AnR 设置",
+	"animt.screen.save":"更新了当前设置",
+	"animt.screen.trans":"背景透明",
+	
+	"animt.key":"AnR 热键",
+	"animt.key.record":"录制控制",
+	"animt.key.bind":"绑定生物"
 }
